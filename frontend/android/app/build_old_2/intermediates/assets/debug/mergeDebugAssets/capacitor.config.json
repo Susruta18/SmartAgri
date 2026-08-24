@@ -1,0 +1,12 @@
+{
+	"appId": "com.agrismart.app",
+	"appName": "AgriSmart",
+	"webDir": "dist",
+	"server": {
+		"cleartext": true
+	},
+	"plugins": {
+		"Camera": {}
+	},
+	"android": {}
+}
