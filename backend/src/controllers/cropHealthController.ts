@@ -25,13 +25,14 @@ const getNearestSensorReading = async (observationTime: Date, deviceId: string) 
   }
 
   // Find the closest one
-  let closest = readings[0];
+  let closest = readings[0]!;
   let minDiff = Math.abs(closest.timestamp.getTime() - observationTime.getTime());
 
   for (let i = 1; i < readings.length; i++) {
-    const diff = Math.abs(readings[i].timestamp.getTime() - observationTime.getTime());
+    const reading = readings[i]!;
+    const diff = Math.abs(reading.timestamp.getTime() - observationTime.getTime());
     if (diff < minDiff) {
-      closest = readings[i];
+      closest = reading;
       minDiff = diff;
     }
   }
@@ -142,7 +143,7 @@ export const createObservation = async (req: Request, res: Response): Promise<vo
       humidity: nearest.humidity,
       lightIntensity: nearest.lightIntensity,
       rainDetected: nearest.rainDetected,
-      observerNotes,
+      ...(observerNotes ? { observerNotes } : {}),
     });
 
     res.status(201).json({ message: 'Crop health observation saved successfully.', data: obs });

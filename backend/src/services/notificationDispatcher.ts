@@ -91,7 +91,7 @@ export async function dispatchSensorNotifications(
     if (warningActions.length > 1) {
       await dispatchAggregatedWarnings(warningActions, resolvedUserId, fcmToken, prefs);
     } else if (warningActions.length === 1) {
-      await dispatchSingleAction(warningActions[0], resolvedUserId, fcmToken, prefs);
+      await dispatchSingleAction(warningActions[0]!, resolvedUserId, fcmToken, prefs);
     }
 
     for (const action of otherActions) {
