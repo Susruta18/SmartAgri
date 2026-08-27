@@ -123,7 +123,7 @@ class LegacyPredictResponse(BaseModel):
 
 
 # ── Health Endpoint ──────────────────────────────────────────────────────────────
-@app.get("/health")
+@app.get("/healthz")
 def health_check():
     """
     Returns service and model health status.
@@ -161,7 +161,8 @@ def read_root():
         "version": "3.0.0",
         "model": PHASE3_MODEL_NAME,
         "model_loaded": model_loaded,
-        "status": "ready" if model_loaded else "degraded",
+        "status": "ok" if model_loaded else "degraded",
+        "error": model_load_error if not model_loaded else None
     }
 
 
