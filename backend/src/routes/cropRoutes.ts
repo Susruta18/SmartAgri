@@ -3,8 +3,6 @@ import multer from 'multer';
 import {
   uploadAndAnalyzeCrop,
   getCropHistory,
-  getNotifications,
-  markNotificationRead,
 } from '../controllers/cropController';
 import { authMiddleware } from '../middleware/authMiddleware';
 
@@ -20,8 +18,6 @@ router.post('/crop-images', authMiddleware, upload.single('image'), uploadAndAna
 // Get user's crop history with analysis results
 router.get('/history', authMiddleware, getCropHistory);
 
-// Notifications
-router.get('/notifications', authMiddleware, getNotifications);
-router.put('/notifications/:id/read', authMiddleware, markNotificationRead);
+// NOTE: Notification endpoints moved to /api/notifications (notificationRoutes.ts)
 
 export default router;

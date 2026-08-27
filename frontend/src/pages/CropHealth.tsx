@@ -12,6 +12,7 @@ import { cn } from '@/utils';
 import { captureImage } from '@/services/cameraService';
 import { useCropUpload, useCropHistory } from '@/hooks/useCropAnalysis';
 import type { AnalysisResult } from '@/hooks/useCropAnalysis';
+import { toast } from 'sonner';
 
 // ── Severity helpers ──────────────────────────────────────────────────────────
 const getSeverityConfig = (severity: string) => {
@@ -103,6 +104,21 @@ const CropHealth: React.FC = () => {
 
       setResult(analysisResult);
       setFlowState('result');
+
+      if (!analysisResult.modelConfigured) {
+        toast.warning('AI Model Not Configured', {
+          description: 'Image saved, but no disease prediction is available.',
+        });
+      } else if (analysisResult.disease === 'Healthy') {
+        toast.success('Crop looks healthy!', {
+          description: 'No disease detected in the analyzed image.',
+        });
+      } else {
+        toast.error(`Disease Detected: ${analysisResult.disease}`, {
+          description: 'Please check the recommendation for treatment.',
+          duration: 6000,
+        });
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Analysis failed. Please try again.';
       setCameraError(msg);

@@ -1,0 +1,29 @@
+{
+    "model_architecture": "MobileNetV2",
+    "imagenet_pretraining": true,
+    "input_size": [
+        224,
+        224,
+        3
+    ],
+    "number_of_classes": 38,
+    "training_image_count": 43353,
+    "validation_image_count": 5474,
+    "test_image_count": 5478,
+    "class_weights_used": true,
+    "random_seed": 42,
+    "phase1_epochs_completed": 15,
+    "phase2_epochs_completed": 30,
+    "best_validation_loss": 1.0252978801727295,
+    "best_validation_accuracy": 0.78125,
+    "final_test_metrics": {
+        "accuracy": 0.7946330904960632,
+        "macro_precision": 0.7751152472674011,
+        "macro_recall": 0.7593733733811753,
+        "macro_f1": 0.7299073285528203,
+        "weighted_precision": 0.8268986402165245,
+        "weighted_recall": 0.7946330777656079,
+        "weighted_f1": 0.7882714747354514
+    },
+    "training_date": "2026-08-25T23:06:37.460549"
+}

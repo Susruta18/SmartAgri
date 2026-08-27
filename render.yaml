@@ -1,0 +1,80 @@
+# ── render.yaml — AgriSmart Production Deployment Blueprint ──────────────────
+# Architecture: Android-only app (Capacitor APK) → Render Backend → MongoDB Atlas
+#
+# This file defines ALL Render services for SmartAgri.
+# There is no web frontend on Render — the UI is a native Android APK built
+# with Capacitor from the React/Vite source. The APK communicates directly
+# with the Render backend over HTTPS.
+#
+# HOW TO DEPLOY:
+#   1. Push your code to GitHub.
+#   2. Go to https://dashboard.render.com/blueprints
+#   3. Click "New Blueprint Instance"
+#   4. Connect your GitHub repository
+#   5. Render will read this file and create both services.
+#   6. After deployment, add secret environment variables in the Render Dashboard.
+#   7. See reports/production_deployment_guide.md for the full checklist.
+
+services:
+
+  # ── Node.js Backend ──────────────────────────────────────────────────────────
+  # Receives API requests from the Android app and ESP32 over HTTPS.
+  - type: web
+    name: smartagri-backend
+    runtime: node
+    region: singapore   # Closest to India — change to 'oregon' or 'frankfurt' if needed
+    plan: starter        # $7/month. Enough for Node.js. Use 'free' for testing only (sleeps after inactivity).
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000     # Render uses port 10000 internally, mapped to 443 externally
+      # ─────────────────────────────────────────────────────────────────────────
+      # SECRETS — Add these in: Render Dashboard → smartagri-backend → Environment
+      # Do NOT put real values here — this file is committed to git.
+      # ─────────────────────────────────────────────────────────────────────────
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: AI_SERVICE_URL
+        sync: false      # Set to your smartagri-ai.onrender.com URL after AI service deploys
+      - key: CORS_ORIGINS
+        sync: false      # Example: capacitor://localhost,http://localhost — needed for Android app
+      - key: DEVICE_SECRET
+        sync: false      # Optional: leave empty to disable ESP32 key auth
+      - key: FIREBASE_SERVICE_ACCOUNT_PATH
+        value: ./serviceAccountKey.json
+        # NOTE: The Firebase serviceAccountKey.json must be added as a Secret File
+        # in Render Dashboard → smartagri-backend → Environment → Secret Files
+        # File path: /opt/render/project/src/backend/serviceAccountKey.json
+
+  # ── Python FastAPI AI Service ────────────────────────────────────────────────
+  # Runs the Phase 3 MobileNetV2 plant disease model.
+  # Docker is required because:
+  #   - TensorFlow has specific system library dependencies
+  #   - The model file (28MB) must be bundled in the container
+  #   - Native Render Python runtime cannot guarantee TF 2.16 compatibility
+  - type: web
+    name: smartagri-ai
+    runtime: docker
+    region: singapore
+    plan: standard       # $25/month — TensorFlow inference needs ≥2GB RAM.
+                         # The 'starter' plan (512MB) WILL crash when loading TF.
+    rootDir: ai-service
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      # No additional secrets — the AI service reads models from the Docker image.

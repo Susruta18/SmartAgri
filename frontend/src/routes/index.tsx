@@ -6,12 +6,14 @@ import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
 import SensorData from '@/pages/SensorData';
 import CropHealth from '@/pages/CropHealth';
+import CropHealthDataCollection from '@/pages/CropHealthDataCollection';
 import Weather from '@/pages/Weather';
 import History from '@/pages/History';
 import Notifications from '@/pages/Notifications';
 import Profile from '@/pages/Profile';
 import Device from '@/pages/Device';
 import Settings from '@/pages/Settings';
+import PlantDiseaseDetection from '@/pages/PlantDiseaseDetection';
 
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 
@@ -30,6 +32,8 @@ export const router = createHashRouter([
           { index: true, element: <Dashboard /> },
           { path: 'sensor-data', element: <SensorData /> },
           { path: 'crop-health', element: <CropHealth /> },
+          { path: 'crop-health-collection', element: <CropHealthDataCollection /> },
+          { path: 'plant-disease', element: <PlantDiseaseDetection /> },
           { path: 'weather', element: <Weather /> },
           { path: 'history', element: <History /> },
           { path: 'notifications', element: <Notifications /> },

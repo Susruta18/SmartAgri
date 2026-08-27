@@ -34,14 +34,41 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- FCM: Default notification channel (Android 8.0+) -->
+        <!-- The Capacitor push-notifications plugin creates channels automatically,
+             but setting a default here ensures notifications always have a channel. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="agrismart_warning" />
+
+        <!-- FCM: Default notification icon for the status bar -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+
     </application>
 
-    <!-- Permissions -->
+    <!-- ── Permissions ──────────────────────────────────────────────── -->
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    
+
+    <!-- Required for vibration in notifications -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Required for exact-alarm notifications on Android 12+ (optional) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- Android 13+ (API 33+): Runtime permission for push notifications -->
+    <!-- The Capacitor plugin requests this at runtime via requestPermissions() -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Required for FCM token to survive device reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <uses-feature android:name="android.hardware.camera" android:required="true" />
+
 </manifest>

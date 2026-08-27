@@ -10,11 +10,13 @@ import { io, Socket } from 'socket.io-client';
 export interface SensorData {
   deviceId: string;
   soilMoisture: number;       // %
+  soilMoistureRaw: number;    // Raw ADC
   soilTemperature: number;    // °C
   airTemperature: number;     // °C
   humidity: number;           // %
   lightIntensity: number;     // lux
   rainDetected: boolean;
+  rainIntensity: number;      // %
   timestamp: string;
 }
 
@@ -26,7 +28,20 @@ interface UseSocketSensorResult {
   lastUpdated: Date | null;
 }
 
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+// Derive the Socket.IO backend URL from VITE_API_BASE_URL.
+// VITE_API_BASE_URL = "https://smartagri-backend.onrender.com/api"
+// → strip "/api" → "https://smartagri-backend.onrender.com"
+// In development: VITE_API_BASE_URL is unset → Vite proxy not available for WS
+//   → fall back to localhost:5000 (only works in dev, not in Android APK).
+const _rawApiBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const BACKEND_URL = _rawApiBase
+  ? _rawApiBase.replace(/\/api\/?$/, '')
+  : import.meta.env.PROD
+    ? (() => {
+        console.error('[AgriSmart] VITE_API_BASE_URL not set — Socket.IO cannot connect in production.');
+        return '';
+      })()
+    : 'http://localhost:5000';
 
 export const useSocketSensor = (): UseSocketSensorResult => {
   const [sensorData, setSensorData] = useState<SensorData | null>(null);

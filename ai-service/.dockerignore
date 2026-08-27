@@ -1,0 +1,35 @@
+# Exclude files that should NOT be in the production Docker image
+
+# Python virtual environment (packages are reinstalled during build)
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Development and test files
+test_*.py
+train_*.py
+
+# Dev environment config
+.env
+.env.*
+
+# Large model files NOT needed for inference
+# Only plant_disease_mobilenetv2_phase3.keras is included in the Docker image
+models/plant_disease_mobilenetv2.keras
+models/plant_disease_mobilenetv2_full_training.keras
+models/plant_disease_mobilenetv2_full_training.keras.bak
+models/yield_model.joblib
+models/yield_model_metadata.json
+models/phase2_resume_metadata.json
+
+# Editor files
+.vscode/
+*.swp
+*.swo

@@ -116,6 +116,15 @@ const SensorData: React.FC = () => {
             color="bg-blue-500"
           />
           <SensorDetailCard
+            icon={Droplets}
+            title="Soil Moisture (Raw)"
+            value={sensorData.soilMoistureRaw || 0}
+            unit="ADC"
+            description="Raw analog reading (4095 = Dry, 0 = Wet)."
+            status="normal"
+            color="bg-blue-600"
+          />
+          <SensorDetailCard
             icon={Thermometer}
             title="Soil Temperature"
             value={sensorData.soilTemperature}
@@ -154,10 +163,19 @@ const SensorData: React.FC = () => {
           <SensorDetailCard
             icon={CloudRain}
             title="Rain Status"
-            value={sensorData.rainDetected ? 'Raining' : 'Not Detected'}
+            value={sensorData.rainDetected ? 'Raining' : 'Dry'}
             description="YL-83 Rain Sensor — detects presence of rainfall for irrigation decisions."
             status={sensorData.rainDetected ? 'warning' : 'normal'}
             color={sensorData.rainDetected ? 'bg-indigo-500' : 'bg-slate-500'}
+          />
+          <SensorDetailCard
+            icon={CloudRain}
+            title="Rain Intensity"
+            value={sensorData.rainIntensity?.toFixed(1) || 0}
+            unit="%"
+            description="YL-83 Rain Sensor — measures the amount of rainfall."
+            status={sensorData.rainIntensity > 50 ? 'warning' : 'normal'}
+            color="bg-indigo-600"
           />
         </div>
       )}

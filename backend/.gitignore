@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.js.map
+*.d.ts.map
+
+# Environment variables — never commit
+.env
+.env.local
+.env.production
+
+# Firebase Admin SDK service account key
+# NEVER commit this file — it contains your Firebase private key
+serviceAccountKey.json

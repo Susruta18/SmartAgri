@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Activity, Cloud, Bell, User,
-  History, Leaf, Cpu, Settings
+  History, Leaf, Cpu, Settings, Camera
 } from 'lucide-react';
 import { cn } from '@/utils';
 
@@ -10,6 +10,8 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Sensors', href: '/sensor-data', icon: Activity },
   { name: 'Crop Health', href: '/crop-health', icon: Leaf },
+  { name: 'Data Collection', href: '/crop-health-collection', icon: Leaf },
+  { name: 'Plant Disease AI', href: '/plant-disease', icon: Camera },
   { name: 'Weather', href: '/weather', icon: Cloud },
   { name: 'History', href: '/history', icon: History },
   { name: 'Notifications', href: '/notifications', icon: Bell },

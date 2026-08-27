@@ -132,6 +132,14 @@ const Dashboard: React.FC = () => {
               lastUpdated={lastUpdated ? lastUpdated.toLocaleTimeString() : 'Just now'}
             />
             <SensorCard
+              title="Soil Moisture (Raw)"
+              value={sensorPayload.soilMoistureRaw || 0}
+              unit="ADC"
+              icon={Droplets}
+              status="normal"
+              lastUpdated={lastUpdated ? lastUpdated.toLocaleTimeString() : 'Just now'}
+            />
+            <SensorCard
               title="Soil Temperature"
               value={sensorPayload.soilTemperature}
               unit="°C"
@@ -168,9 +176,17 @@ const Dashboard: React.FC = () => {
             />
             <SensorCard
               title="Rain Status"
-              value={sensorPayload.rainDetected ? 'Raining' : 'Not Detected'}
+              value={sensorPayload.rainDetected ? 'Raining' : 'Dry'}
               icon={CloudRain}
               status={sensorPayload.rainDetected ? 'warning' : 'normal'}
+              lastUpdated={lastUpdated ? lastUpdated.toLocaleTimeString() : 'Just now'}
+            />
+            <SensorCard
+              title="Rain Intensity"
+              value={sensorPayload.rainIntensity?.toFixed(1) || 0}
+              unit="%"
+              icon={CloudRain}
+              status={sensorPayload.rainIntensity > 50 ? 'warning' : 'normal'}
               lastUpdated={lastUpdated ? lastUpdated.toLocaleTimeString() : 'Just now'}
             />
           </motion.div>
@@ -206,7 +222,7 @@ const Dashboard: React.FC = () => {
                         Light: <span className="font-medium">{sensorPayload.lightIntensity.toLocaleString()} lux</span>
                       </div>
                       <div className="text-sm">
-                        Soil: <span className="font-medium">{sensorPayload.soilMoisture}% moisture</span>
+                        Soil: <span className="font-medium">{sensorPayload.soilMoisture}% ({sensorPayload.soilMoistureRaw || 0} ADC)</span>
                       </div>
                     </div>
                   </div>

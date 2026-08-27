@@ -3,16 +3,19 @@ import { z } from 'zod';
 import SensorReading from '../models/SensorReading';
 import Device from '../models/Device';
 import { getIO } from '../socket';
+import { dispatchSensorNotifications } from '../services/notificationDispatcher';
 
 // Zod schema matching exactly what the ESP32 sends
 const sensorPayloadSchema = z.object({
   deviceId: z.string().min(1),
   soilMoisture: z.number().min(0).max(100),
+  soilMoistureRaw: z.number().min(0).optional().default(0),
   soilTemperature: z.number().min(-40).max(125),
   airTemperature: z.number().min(-40).max(80),
   humidity: z.number().min(0).max(100),
   lightIntensity: z.number().min(0),
   rainDetected: z.boolean(),
+  rainIntensity: z.number().min(0).max(100).optional().default(0),
 });
 
 /**
@@ -46,11 +49,13 @@ export const ingestSensorData = async (req: Request, res: Response): Promise<voi
     const mappedPayload = {
       deviceId: parsedDeviceId || 'ESP32-001',
       soilMoisture: raw.soilMoisture ?? 0,
+      soilMoistureRaw: raw.soilMoistureRaw ?? 0,
       soilTemperature: raw.soilTemperature ?? 0, // Fallback if DHT/DS18B20 fails
       airTemperature: raw.airTemperature ?? 0,   // Fallback if DHT fails
       humidity: raw.airHumidity ?? raw.humidity ?? 0, // Map airHumidity to humidity
-      lightIntensity: raw.lightIntensity ?? 0,
+      lightIntensity: raw.lightLux ?? raw.lightIntensity ?? 0,
       rainDetected: raw.rainDetected ?? (raw.rainStatus === 'HEAVY_RAIN' || raw.rainStatus === 'LIGHT_RAIN'),
+      rainIntensity: raw.rainIntensity ?? 0,
     };
 
     const parsed = sensorPayloadSchema.safeParse(mappedPayload);
@@ -67,11 +72,13 @@ export const ingestSensorData = async (req: Request, res: Response): Promise<voi
     const reading = await SensorReading.create({
       deviceId: data.deviceId,
       soilMoisture: data.soilMoisture,
+      soilMoistureRaw: data.soilMoistureRaw,
       soilTemperature: data.soilTemperature,
       airTemperature: data.airTemperature,
       humidity: data.humidity,
       lightIntensity: data.lightIntensity,
       rainDetected: data.rainDetected,
+      rainIntensity: data.rainIntensity,
       timestamp: new Date(),
     });
 
@@ -87,15 +94,32 @@ export const ingestSensorData = async (req: Request, res: Response): Promise<voi
     io.emit('sensor:update', {
       deviceId: data.deviceId,
       soilMoisture: data.soilMoisture,
+      soilMoistureRaw: data.soilMoistureRaw,
       soilTemperature: data.soilTemperature,
       airTemperature: data.airTemperature,
       humidity: data.humidity,
       lightIntensity: data.lightIntensity,
       rainDetected: data.rainDetected,
+      rainIntensity: data.rainIntensity,
       timestamp: reading.timestamp,
     });
 
     console.log(`✅ ESP32 Data successfully received and broadcasted to dashboard!`, data);
+
+    // ── Fire notification pipeline (async, never blocks ingest response) ─────
+    // dispatchSensorNotifications never throws — errors are caught internally
+    dispatchSensorNotifications(data.deviceId, {
+      soilMoisture:    data.soilMoisture,
+      airTemperature:  data.airTemperature,
+      humidity:        data.humidity,
+      soilTemperature: data.soilTemperature,
+      lightIntensity:  data.lightIntensity,
+      rainDetected:    data.rainDetected,
+    }).catch((err) => {
+      // Extra safety net — should never reach here
+      console.error('[Ingest] Notification dispatch error (unexpected):', err?.message);
+    });
+
     res.status(200).json({ message: 'Sensor data received', id: reading._id });
   } catch (error) {
     console.error('Ingest error:', error);

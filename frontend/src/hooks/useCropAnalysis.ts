@@ -47,7 +47,7 @@ export const useCropUpload = () => {
       formData.append('image', blob, 'crop.jpg');
       formData.append('capturedAt', capturedAt);
 
-      const response = await api.post<AnalysisResult>('/crop-images', formData, {
+      const response = await api.post<AnalysisResult>('/crop/crop-images', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

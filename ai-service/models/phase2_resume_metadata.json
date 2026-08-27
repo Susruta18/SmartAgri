@@ -1,0 +1,9 @@
+{
+    "experiment": "phase2_resume",
+    "final_test_metrics": {
+        "accuracy": 0.9235122203826904,
+        "macro_precision": 0.8964817246398882,
+        "macro_recall": 0.911729598144572,
+        "macro_f1": 0.9018948018780276
+    }
+}

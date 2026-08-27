@@ -1,0 +1,24 @@
+{
+    "model_type": "Random Forest",
+    "target_column": "yield",
+    "original_feature_names": [
+        "crop",
+        "season",
+        "state",
+        "area",
+        "fertilizer",
+        "pesticide",
+        "year"
+    ],
+    "encoded_feature_information": "One-Hot Encoded columns: ['crop', 'season', 'state']. No scaling applied to ['area', 'fertilizer', 'pesticide', 'year'].",
+    "random_seed": 42,
+    "train_size": 15751,
+    "validation_size": 1969,
+    "test_size": 1969,
+    "validation_mae": 8.760663086889661,
+    "validation_rmse": 136.47344209830788,
+    "validation_r2": 0.975301908652841,
+    "test_mae": 8.335114453048273,
+    "test_rmse": 97.83961480004187,
+    "test_r2": 0.9887160789792986
+}
