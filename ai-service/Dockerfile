@@ -1,8 +1,8 @@
 # ── AgriSmart AI Service Dockerfile ──────────────────────────────────────────
-# Uses the official TensorFlow 2.15.1 CPU image as base.
+# Uses the official TensorFlow 2.15.0 CPU image as base.
 # CPU-only is used because Render's free/starter tiers do not provide GPUs.
 # MobileNetV2 inference is fast enough on CPU (~200-500ms per image).
-FROM tensorflow/tensorflow:2.15.1
+FROM tensorflow/tensorflow:2.15.0
 
 # Set working directory
 WORKDIR /app
