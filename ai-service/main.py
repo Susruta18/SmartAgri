@@ -26,7 +26,7 @@ logger = logging.getLogger("agrismart.ai")
 
 # ── Model Paths (resolved relative to this file, never Windows absolute paths) ──
 _SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
-PHASE3_MODEL_PATH = os.path.join(_SERVICE_DIR, "models", "plant_disease_mobilenetv2_phase3.keras")
+PHASE3_MODEL_PATH = os.path.join(_SERVICE_DIR, "models", "plant_disease_savedmodel")
 CLASS_NAMES_PATH = os.path.join(_SERVICE_DIR, "models", "plant_disease_class_names.json")
 PHASE3_MODEL_NAME = "plant_disease_mobilenetv2_phase3"
 

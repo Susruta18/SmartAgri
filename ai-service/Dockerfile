@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir \
 # Copy model files FIRST to leverage Docker layer caching.
 # Large files (27MB .keras) are cached separately from application code.
 # Model files change infrequently; code changes do not invalidate the model layer.
-COPY models/plant_disease_mobilenetv2_phase3.keras ./models/
+COPY models/plant_disease_savedmodel ./models/plant_disease_savedmodel
 COPY models/plant_disease_class_names.json ./models/
 COPY models/plant_disease_model_metadata.json ./models/
 

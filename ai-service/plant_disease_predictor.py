@@ -11,6 +11,7 @@ class PlantDiseasePredictor:
         self._model = None
         self._class_names = []
         self._is_loaded = False
+        self._infer_fn = None
 
     def load(self):
         """Lazily load the model and class names."""
@@ -26,7 +27,8 @@ class PlantDiseasePredictor:
         # Import tensorflow only when needed
         import tensorflow as tf
         
-        self._model = tf.keras.models.load_model(self.model_path)
+        self._model = tf.saved_model.load(self.model_path)
+        self._infer_fn = self._model.signatures["serving_default"]
         
         with open(self.class_names_path, 'r') as f:
             class_dict = json.load(f)
@@ -82,8 +84,13 @@ class PlantDiseasePredictor:
         except Exception as e:
             raise ValueError(f"Failed to process image: {str(e)}")
 
-        # Inference
-        predictions = self._model.predict(img_array)[0]
+        # Inference using SavedModel signature
+        import tensorflow as tf
+        img_tensor = tf.constant(img_array, dtype=tf.float32)
+        predictions_dict = self._infer_fn(input_layer=img_tensor)
+        
+        # Extract the array from the returned dictionary
+        predictions = predictions_dict["output_0"].numpy()[0]
         
         # Get top 3 predictions
         top_3_indices = np.argsort(predictions)[-3:][::-1]
