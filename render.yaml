@@ -73,7 +73,7 @@ services:
                          # The 'starter' plan (512MB) WILL crash when loading TF.
     rootDir: ai-service
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     envVars:
       - key: PORT
         value: 8000

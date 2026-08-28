@@ -55,6 +55,18 @@ app.use('/api/device', deviceRoutes);          // Device settings and IP config
 app.use('/api/notifications', notificationRoutes); // Push notification management
 app.use('/api/crop-health', cropHealthRoutes); // Crop Health Data Collection
 
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+// Proxy direct AI predictions from the Android App to the AI Service
+const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+app.use('/api/predict', createProxyMiddleware({
+  target: aiServiceUrl,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api/predict': '/predict'
+  }
+}));
+
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Backend is running', timestamp: new Date().toISOString() });
 });
