@@ -31,13 +31,12 @@ from fastapi.testclient import TestClient
 sys.path.append(r"C:\Projects\SmartAgri\ai-service")
 from main import app
 
-client = TestClient(app)
-
-with open(img_abs_path, 'rb') as f:
-    response = client.post(
-        "/predict/plant-disease",
-        files={"file": (os.path.basename(img_abs_path), f, "image/jpeg")}
-    )
+with TestClient(app) as client:
+    with open(img_abs_path, 'rb') as f:
+        response = client.post(
+            "/predict/plant-disease",
+            files={"file": (os.path.basename(img_abs_path), f, "image/jpeg")}
+        )
 
 print(f"Status Code: {response.status_code}")
 if response.status_code == 200:

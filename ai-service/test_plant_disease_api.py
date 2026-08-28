@@ -57,7 +57,7 @@ def test_model_loading_missing_file():
 def test_health_returns_model_loaded():
     """Health endpoint must report model_loaded=true when model files exist."""
     with TestClient(app) as client:
-        r = client.get("/health")
+        r = client.get("/healthz")
         assert r.status_code == 200
         data = r.json()
         assert data["status"] == "ok"
