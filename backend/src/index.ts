@@ -26,8 +26,9 @@ const PORT = process.env.PORT || 5000;
 //   Capacitor Android: capacitor://localhost
 //   Local dev browser: http://localhost,http://localhost:5173
 // If CORS_ORIGINS is not set, defaults to '*' (development convenience only).
-const corsOrigins: string | string[] = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',')
+const rawOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
+const corsOrigins = process.env.CORS_ORIGINS
+  ? Array.from(new Set([...rawOrigins, 'http://localhost', 'capacitor://localhost']))
   : '*';
 
 app.use(cors({
