@@ -59,8 +59,8 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // Proxy direct AI predictions from the Android App to the AI Service
 let aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-if (aiServiceUrl.includes('ngrok')) {
-  console.log('[Proxy] Overriding ngrok AI_SERVICE_URL with production URL');
+if (aiServiceUrl.includes('ngrok') || aiServiceUrl === 'https://smartagri-ai.onrender.com' || process.env.NODE_ENV === 'production') {
+  console.log('[Proxy] Overriding AI_SERVICE_URL with correct production URL');
   aiServiceUrl = 'https://smartagri-ai-78su.onrender.com';
 }
 app.use('/api/predict', createProxyMiddleware({
