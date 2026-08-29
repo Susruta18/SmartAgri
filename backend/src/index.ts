@@ -67,7 +67,8 @@ app.use('/api/predict', createProxyMiddleware({
   target: aiServiceUrl,
   changeOrigin: true,
   pathRewrite: {
-    '^/api/predict': '/predict'
+    '^/plant-disease': '/predict/plant-disease',
+    '^/': '/predict/'
   }
 }));
 
