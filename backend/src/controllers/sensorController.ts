@@ -26,11 +26,13 @@ export const getDashboardData = async (req: Request, res: Response): Promise<voi
       hasData: true,
       deviceId: latest.deviceId,
       soilMoisture: latest.soilMoisture,
+      soilMoistureRaw: latest.soilMoistureRaw,
       soilTemperature: latest.soilTemperature,
       airTemperature: latest.airTemperature,
       humidity: latest.humidity,
       lightIntensity: latest.lightIntensity,
       rainDetected: latest.rainDetected,
+      rainIntensity: latest.rainIntensity,
       timestamp: latest.timestamp,
     });
   } catch (error) {
