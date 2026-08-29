@@ -6,9 +6,10 @@ export interface ISensorReading extends Document {
   soilMoistureRaw: number;     // Raw ADC value
   soilTemperature: number;     // °C — DS18B20
   airTemperature: number;      // °C — DHT22
-  humidity: number;            // %  — DHT22
+  humidity: number;            // % — DHT22
   lightIntensity: number;      // lux — BH1750
   rainDetected: boolean;       // boolean — YL-83
+  rainRaw: number;             // Raw ADC value
   rainIntensity: number;       // % (0 = dry, 100 = heavy rain)
   timestamp: Date;
 }
@@ -23,6 +24,7 @@ const SensorReadingSchema = new Schema<ISensorReading>(
     humidity: { type: Number, required: true },
     lightIntensity: { type: Number, required: true },
     rainDetected: { type: Boolean, required: true, default: false },
+    rainRaw: { type: Number, required: false, default: 0 },
     rainIntensity: { type: Number, required: false, default: 0 },
     timestamp: { type: Date, default: Date.now },
   },
@@ -30,6 +32,12 @@ const SensorReadingSchema = new Schema<ISensorReading>(
 );
 
 // Keep only last 7 days automatically (TTL index)
-SensorReadingSchema.index({ timestamp: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
+SensorReadingSchema.index(
+  { timestamp: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 * 7 }
+);
 
-export default mongoose.model<ISensorReading>('SensorReading', SensorReadingSchema);
+export default mongoose.model<ISensorReading>(
+  'SensorReading',
+  SensorReadingSchema
+);
