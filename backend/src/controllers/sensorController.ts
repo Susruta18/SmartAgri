@@ -3,8 +3,8 @@ import SensorReading from '../models/SensorReading';
 
 /**
  * GET /api/sensor/dashboard
+ *
  * Returns the latest sensor reading for a given deviceId.
- * If no reading exists, returns null data with a clear message.
  */
 export const getDashboardData = async (
   req: Request,
@@ -70,8 +70,9 @@ export const getDashboardData = async (
 
 /**
  * GET /api/sensor/history
+ *
  * Returns the last N sensor readings for a deviceId.
- * Used for the History page charts.
+ * Used by the History page.
  */
 export const getSensorHistory = async (
   req: Request,
