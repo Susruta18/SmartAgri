@@ -61,7 +61,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 let aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 if (aiServiceUrl.includes('ngrok')) {
   console.log('[Proxy] Overriding ngrok AI_SERVICE_URL with production URL');
-  aiServiceUrl = 'https://smartagri-ai.onrender.com';
+  aiServiceUrl = 'https://smartagri-ai-78su.onrender.com';
 }
 app.use('/api/predict', createProxyMiddleware({
   target: aiServiceUrl,
