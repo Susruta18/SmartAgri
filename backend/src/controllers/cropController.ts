@@ -14,8 +14,13 @@ import { dispatchCropHealthNotification } from '../services/notificationDispatch
 // In production, a missing AI_SERVICE_URL causes requests to fail with a clear
 // 503 — never silently connecting to localhost which the Render host cannot reach.
 const _aiServiceUrl = process.env.AI_SERVICE_URL;
-const AI_SERVICE_URL: string | null = _aiServiceUrl ||
+let AI_SERVICE_URL: string | null = _aiServiceUrl ||
   (process.env.NODE_ENV !== 'production' ? 'http://localhost:8000' : null);
+
+if (AI_SERVICE_URL && AI_SERVICE_URL.includes('ngrok')) {
+  console.log('[CropController] Overriding ngrok AI_SERVICE_URL with production URL');
+  AI_SERVICE_URL = 'https://smartagri-ai.onrender.com';
+}
 
 /**
  * POST /api/crop/upload

@@ -52,7 +52,11 @@ const Register: React.FC = () => {
       login(res.data.token, res.data.user);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to register');
+      if (!err.response) {
+        setError('Network error: Cannot reach the server. It may be asleep or blocked by CORS.');
+      } else {
+        setError(err.response?.data?.message || 'Failed to register');
+      }
     }
   };
 

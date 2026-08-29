@@ -30,62 +30,63 @@ PHASE3_MODEL_PATH = os.path.join(_SERVICE_DIR, "models", "plant_disease_savedmod
 CLASS_NAMES_PATH = os.path.join(_SERVICE_DIR, "models", "plant_disease_class_names.json")
 PHASE3_MODEL_NAME = "plant_disease_mobilenetv2_phase3"
 
+import threading
+
 # ── Global predictor instance ────────────────────────────────────────────────────
 from plant_disease_predictor import PlantDiseasePredictor
 
 plant_disease_predictor: PlantDiseasePredictor | None = None
 model_load_error: str | None = None
+_model_lock = threading.Lock()
 
-
-def _load_model_at_startup() -> None:
+def _get_or_load_model() -> PlantDiseasePredictor | None:
     """
-    Load the Phase 3 MobileNetV2 model eagerly at service startup.
-    Startup loading is used (vs. lazy loading) because:
-      1. It surfaces model path/TF dependency failures immediately, not mid-request.
-      2. Render restarts the process on crash, so any startup failure is visible in logs.
-      3. First-request latency is avoided — critical for production responsiveness.
+    Lazy loads the Phase 3 MobileNetV2 model on first prediction request.
+    Uses a lock to prevent concurrent requests from loading the model multiple times.
     """
     global plant_disease_predictor, model_load_error
 
-    if not os.path.exists(PHASE3_MODEL_PATH):
-        model_load_error = f"Model file not found at: {PHASE3_MODEL_PATH}"
-        logger.error(f"[Startup] CRITICAL — {model_load_error}")
-        return
+    if plant_disease_predictor is not None and plant_disease_predictor._is_loaded:
+        return plant_disease_predictor
 
-    if not os.path.exists(CLASS_NAMES_PATH):
-        model_load_error = f"Class names file not found at: {CLASS_NAMES_PATH}"
-        logger.error(f"[Startup] CRITICAL — {model_load_error}")
-        return
+    with _model_lock:
+        # Double-check inside the lock in case another thread just loaded it
+        if plant_disease_predictor is not None and plant_disease_predictor._is_loaded:
+            return plant_disease_predictor
 
-    try:
-        predictor = PlantDiseasePredictor(
-            model_path=PHASE3_MODEL_PATH,
-            class_names_path=CLASS_NAMES_PATH,
-        )
-        predictor.load()  # Eager load — will raise on any TF/file error
-        plant_disease_predictor = predictor
-        logger.info(f"[Startup] Model '{PHASE3_MODEL_NAME}' loaded successfully.")
-    except Exception as e:
-        model_load_error = str(e)
-        plant_disease_predictor = None
-        logger.error(f"[Startup] CRITICAL — Failed to load model: {e}", exc_info=True)
+        logger.info("[Model] Lazy loading model. This may take up to 60-90 seconds...")
+        if not os.path.exists(PHASE3_MODEL_PATH):
+            model_load_error = f"Model file not found at: {PHASE3_MODEL_PATH}"
+            logger.error(f"[Model] CRITICAL — {model_load_error}")
+            return None
 
+        if not os.path.exists(CLASS_NAMES_PATH):
+            model_load_error = f"Class names file not found at: {CLASS_NAMES_PATH}"
+            logger.error(f"[Model] CRITICAL — {model_load_error}")
+            return None
+
+        try:
+            predictor = PlantDiseasePredictor(
+                model_path=PHASE3_MODEL_PATH,
+                class_names_path=CLASS_NAMES_PATH,
+            )
+            predictor.load()  
+            plant_disease_predictor = predictor
+            logger.info(f"[Model] Model '{PHASE3_MODEL_NAME}' loaded successfully.")
+            return plant_disease_predictor
+        except Exception as e:
+            model_load_error = str(e)
+            plant_disease_predictor = None
+            logger.error(f"[Model] CRITICAL — Failed to load model: {e}", exc_info=True)
+            return None
 
 # ── Lifespan context (FastAPI startup/shutdown) ──────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("[Startup] AgriSmart AI Service starting...")
-    _load_model_at_startup()
-    if plant_disease_predictor is not None:
-        logger.info("[Startup] Service is READY with model loaded.")
-    else:
-        logger.warning(
-            f"[Startup] Service starting in DEGRADED mode — model not loaded. "
-            f"Reason: {model_load_error}"
-        )
+    logger.info("[Startup] Service is READY. Model will load lazily on first request.")
     yield
     logger.info("[Shutdown] AgriSmart AI Service shutting down.")
-
 
 # ── App ──────────────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -127,29 +128,16 @@ class LegacyPredictResponse(BaseModel):
 def health_check():
     """
     Returns service and model health status.
-    - 200: service OK, model loaded
-    - 503: service running but model failed to load
+    - 200: service OK, model loaded or waiting to load lazily
     """
     model_loaded = plant_disease_predictor is not None and plant_disease_predictor._is_loaded
 
-    if model_loaded:
-        return {
-            "status": "ok",
-            "model_loaded": True,
-            "model": PHASE3_MODEL_NAME,
-        }
-    else:
-        # Return 503 so load balancers and health checks correctly detect degraded state
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "degraded",
-                "model_loaded": False,
-                "model": PHASE3_MODEL_NAME,
-                "error": model_load_error or "Model not loaded",
-            },
-        )
+    return {
+        "status": "ok",
+        "model_loaded": model_loaded,
+        "model": PHASE3_MODEL_NAME,
+        "error": model_load_error,
+    }
 
 
 # ── Root Endpoint ────────────────────────────────────────────────────────────────
@@ -161,8 +149,8 @@ def read_root():
         "version": "3.0.0",
         "model": PHASE3_MODEL_NAME,
         "model_loaded": model_loaded,
-        "status": "ok" if model_loaded else "degraded",
-        "error": model_load_error if not model_loaded else None
+        "status": "ok",
+        "error": model_load_error
     }
 
 
@@ -177,9 +165,10 @@ async def predict_disease_by_url(request: PredictByUrlRequest):
     Phase 3 PlantDiseasePredictor. The response shape is preserved for
     backward compatibility with cropController.ts.
     """
-    if plant_disease_predictor is None or not plant_disease_predictor._is_loaded:
+    predictor = _get_or_load_model()
+    if predictor is None:
         logger.error(
-            f"[/predict] Request received but model is not loaded. "
+            f"[/predict] Request received but model failed to load. "
             f"Error: {model_load_error}"
         )
         raise HTTPException(
@@ -210,7 +199,7 @@ async def predict_disease_by_url(request: PredictByUrlRequest):
         )
 
     try:
-        result = plant_disease_predictor.predict(image_bytes)
+        result = predictor.predict(image_bytes)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail={"error": "Invalid image", "message": str(ve)})
     except Exception as e:
@@ -288,8 +277,9 @@ async def predict_plant_disease(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Empty file uploaded")
 
     # Model check after input validation
-    if plant_disease_predictor is None or not plant_disease_predictor._is_loaded:
-        logger.error(f"[/predict/plant-disease] Model not loaded: {model_load_error}")
+    predictor = _get_or_load_model()
+    if predictor is None:
+        logger.error(f"[/predict/plant-disease] Model failed to load: {model_load_error}")
         raise HTTPException(
             status_code=503,
             detail=(
@@ -300,7 +290,7 @@ async def predict_plant_disease(file: UploadFile = File(...)):
         )
 
     try:
-        result = plant_disease_predictor.predict(image_bytes)
+        result = predictor.predict(image_bytes)
         logger.info(
             f"[/predict/plant-disease] Result: class={result['predicted_class']}, "
             f"confidence={result['confidence']:.1f}%"

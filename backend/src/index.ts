@@ -58,7 +58,11 @@ app.use('/api/crop-health', cropHealthRoutes); // Crop Health Data Collection
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // Proxy direct AI predictions from the Android App to the AI Service
-const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+let aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+if (aiServiceUrl.includes('ngrok')) {
+  console.log('[Proxy] Overriding ngrok AI_SERVICE_URL with production URL');
+  aiServiceUrl = 'https://smartagri-ai.onrender.com';
+}
 app.use('/api/predict', createProxyMiddleware({
   target: aiServiceUrl,
   changeOrigin: true,

@@ -232,7 +232,7 @@ const CropHealth: React.FC = () => {
                     >
                       <Microscope className="h-10 w-10 text-primary" />
                       <p className="text-white font-semibold text-lg">Analyzing crop image...</p>
-                      <p className="text-white/70 text-sm">AI is scanning for disease patterns</p>
+                      <p className="text-white/70 text-sm text-center px-4">AI is scanning for disease patterns.<br/>First scan may take up to 2 minutes.</p>
                       <div className="flex gap-1 mt-2">
                         {[0, 1, 2].map((i) => (
                           <motion.div
@@ -412,9 +412,16 @@ const CropHealth: React.FC = () => {
                     className="flex flex-col items-center justify-center py-10 gap-4"
                   >
                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {flowState === 'uploading' ? 'Uploading to cloud...' : 'Running AI analysis...'}
-                    </p>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {flowState === 'uploading' ? 'Uploading to cloud...' : 'Running AI analysis...'}
+                      </p>
+                      {flowState === 'analyzing' && (
+                        <p className="text-xs text-muted-foreground/70 mt-1">
+                          AI model may be waking up — first scan can take 1–2 minutes
+                        </p>
+                      )}
+                    </div>
                   </motion.div>
                 )}
 
