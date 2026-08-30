@@ -21,6 +21,9 @@ const config: CapacitorConfig = {
     cleartext: false,
   },
   plugins: {
+    CapacitorHttp: {
+      enabled: false,
+    },
     Camera: {
       // No extra config needed; permissions handled in AndroidManifest.xml
     },

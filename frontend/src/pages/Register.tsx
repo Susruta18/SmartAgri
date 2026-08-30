@@ -109,7 +109,7 @@ const Register: React.FC = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="farmer@agrismart.com" {...field} />
+                    <Input type="email" autoCapitalize="none" autoCorrect="off" placeholder="farmer@agrismart.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

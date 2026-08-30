@@ -8,7 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("REGISTER REQUEST RECEIVED:", req.body);
-    const { name, email, password, farmName, phone } = req.body;
+    const { name, password, farmName, phone } = req.body;
+    const email = req.body.email?.toLowerCase();
     
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -41,7 +42,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email?.toLowerCase();
 
     const user = await User.findOne({ email });
     if (!user) {

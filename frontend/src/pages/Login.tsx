@@ -41,7 +41,8 @@ const Login: React.FC = () => {
       if (!err.response) {
         setError('Network error: Cannot reach the server. It may be asleep or blocked by CORS.');
       } else {
-        setError(err.response?.data?.message || 'Failed to login');
+        const msg = err.response?.data?.message;
+        setError(msg || `Server Error ${err.response.status} (${err.response.statusText})`);
       }
     }
   };
@@ -69,7 +70,7 @@ const Login: React.FC = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="farmer@agrismart.com" {...field} />
+                    <Input type="email" autoCapitalize="none" autoCorrect="off" placeholder="farmer@agrismart.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
